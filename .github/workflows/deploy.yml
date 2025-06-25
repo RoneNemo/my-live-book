@@ -1,20 +1,47 @@
+# Name of the workflow
 name: Deploy Jupyter Book
+
+# Run this workflow when you push to the main branch
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
+# A single job called "build-and-deploy"
 jobs:
   build-and-deploy:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # --- THIS IS THE FIX ---
+    # Give the workflow 'write' permissions to be able to push to the gh-pages branch.
+    permissions:
+      contents: write
+    # --- END OF FIX ---
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
       uses: actions/checkout@v4
+
+    # Step 2: Set up Python so we can use pip
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+
+    # Step 3: Install all the Python libraries listed in requirements.txt
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+
+    # Step 4: Build the Jupyter Book
     - name: Build the book
-      run: jupyter-book build .
+      run: |
+        jupyter-book build .
+
+    # Step 5: Use a special tool to push the built HTML to the gh-pages branch
     - name: Deploy the book
-      run: ghp-import -n -p -f _build/html
+      run: |
+        ghp-import -n -p -f _build/html
